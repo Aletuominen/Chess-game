@@ -38,5 +38,8 @@
     <ClCompile Include="initialise.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="playgame.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

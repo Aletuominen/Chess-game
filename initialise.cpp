@@ -1,5 +1,6 @@
 #include "initialise.h"
 #include "functions.h"
+#include "playgame.h"
 
 
 void setupBoard(){

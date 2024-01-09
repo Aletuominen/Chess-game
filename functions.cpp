@@ -24,7 +24,11 @@ void printBoard(map<string, string> boardPosition, vector<string> boardOrder) {
 			printRow.clear();
 		}
 	}
+}
 
+bool checkmate(std::map<std::string, std::string> boardPosition, bool whiteTurn)
+{
+	return false;
 }
 
 void startingPieces(map<string, string>& boardPosition, vector<string>& boardOrder) {
