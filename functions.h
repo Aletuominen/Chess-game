@@ -3,17 +3,20 @@
 #include <map>
 #include <iostream>
 #include <iomanip>
+#include <sstream>
 
 using namespace std;
 
 
-void printBoard (std::map < std::string, std::string> boardPosition, std::vector<std::string> boardOrder);
+void printBoard (map < string, string> boardPosition, vector<string> boardOrder);
 
-std::vector<std::string> legalMoves (std::string piece, std::map < std::string, std::string> boardPosition);
-std::vector<std::string> checkDiagonals (std::string piece, std::map < std::string, std::string> boardPosition);
-std::vector<std::string> checkLines (std::string piece, std::map < std::string, std::string> boardPosition);
-bool absolutePin(std::string piece, std::map < std::string, std::string> boardPosition);
+vector<string> legalMoves (bool whiteTurn, string piece, map < string, string> boardPosition);
+vector<string> checkDiagonals (string piecePos, map < string, string> boardPosition);
+vector<string> checkLines (string piecePos, map < string, string> boardPosition);
+bool absolutePin(string piece, map < string, string> boardPosition);
 //Potentially only need 2 --> check legal moves, if none, check if check and return either stalemate or checkmate
-bool check(std::map < std::string, std::string> boardPosition, bool whiteTurn);
-bool checkmate(std::map < std::string, std::string> boardPosition, bool whiteTurn);
+bool check(map < string, string> boardPosition, bool whiteTurn);
+bool checkmate(map < string, string> boardPosition, bool whiteTurn);
 void startingPieces(map<string, string>& boardPosition, vector<string>& boardOrder);
+string findPiecePosition(string piece, map<string, string> boardPosition);
+string checkCollision(bool whiteTurn, string position, map<string, string> boardPosition);

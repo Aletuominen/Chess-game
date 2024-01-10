@@ -3,14 +3,8 @@
 
 void movePiece(bool whiteTurn, map<string, string> boardPosition) {
 
-	bool validPiece = false;
-
 	while (true) {
 
-		if (validPiece) {
-			// Show legal moves, ask to confirm move
-			break;
-		}
 		string input = "";
 		cout << "Please select a piece to move: ";
 		cin >> input;
@@ -27,16 +21,17 @@ void movePiece(bool whiteTurn, map<string, string> boardPosition) {
 		}
 
 		else {
-			for (auto it = boardPosition.begin(); it != boardPosition.end(); it++) {
-
-				if (input == it->second) {
-					cout << "Moving piece " << it->second << " on square " << it->first << endl;
-					validPiece = true;
-				}
-
-			}
-			if (!validPiece) {
+			string piecePosition = findPiecePosition(input, boardPosition);
+			if (piecePosition == ""){
 				cout << "Invalid piece" << endl;
+				continue;
+			}
+			else{
+				cout << "Moving piece " << boardPosition[piecePosition] << " on square " << piecePosition << endl;
+				cout << "Legal moves are: " << legalMoves(true, input, boardPosition)[0]
+					 << ", " << legalMoves(true, input, boardPosition)[1] << endl
+					 ;
+						
 			}
 		}
 	}
