@@ -8,14 +8,14 @@ const vector<string> blackPieces = { "BP1", "BP2", "BP3", "BP4", "BP5", "BP6", "
 									, "BR1", "BN1", "BB1", "BQ", "BK" , "BB2" , "BN2" , "BR2"
 };
 
-void printBoard(map<string, string> boardPosition, vector<string> boardOrder) {
+void printBoard(const map<string, string> &boardPosition, const vector<string> &boardOrder) {
 
 	vector<string> printRow; // Arrange squares for printing
 	auto it2 = boardOrder.rbegin();
 
 	for (int i = 63; i > -1; it2++, i--) {
 
-		printRow.push_back(boardPosition[boardOrder[i]]);
+		printRow.push_back(boardPosition.at(boardOrder.at(i)));
 		if (printRow.size() == 8) {
 			for (int cell = 0; cell < 8; cell++) {
 				cout << setw(5) << printRow[7 - cell];
@@ -26,43 +26,45 @@ void printBoard(map<string, string> boardPosition, vector<string> boardOrder) {
 	}
 }
 // Separate function for each piece type?
-vector<string> legalMoves(bool whiteTurn, string piece, map<string, string> boardPosition)
+vector<string> findLegalMoves(bool whiteTurn, string piece, map<string, string> boardPosition)
 {
 
 	stringstream ss;
+	vector<string> moves = {};
 	ss << piece[1] << findPiecePosition(piece, boardPosition); // e.g. PA2
-	vector<string> moves = checkDiagonals(ss.str(), boardPosition);
-	
 
-	for (auto move : moves) {
-		move = checkCollision(whiteTurn, move, boardPosition);
+	if (piece[1] == 'P' && whiteTurn) {
+		moves = moveWhitePawn(ss.str(), boardPosition);
 	}
+	
+	/* Executed in other functions
+	for (int i = 0; i < moves.size(); ++i) {
 
+		moves[i] = checkCollision(whiteTurn, moves[i], boardPosition);
+	}
+	*/
 	return moves;
 }
 
-vector<string> checkDiagonals(string piece, map<string, string> boardPosition)
+vector<string> checkDiagonals(bool whiteTurn, string piece, map<string, string> boardPosition)
 {
 	char file = piece[1];
 	char rank = piece[2];
-	char file1 = file - 1;
-	char rank1 = rank + 1;
 	
-	file += 1;
-	rank += 1;
-	
+	vector<string> moves = {};
+	string nextMove = "";
 	// cout << string{file} << " and " << rank << endl;
 
-	string square1 = string{ file, rank };
-	string square2 = string{ file1, rank1 };
+	while (file <= 'H' && rank <= 8) {
 
-
-	return {square1, square2};
-
-	// Need to check which pieces are on the tiles
-	return { boardPosition[to_string(file + 1) + to_string(rank + 1)],
-			boardPosition[to_string(file - 1) + to_string(rank + 1)]
-	};
+		++file;
+		++rank;
+		nextMove = checkCollision(whiteTurn, string{ file, rank }, boardPosition);
+		if (nextMove != "") {
+			moves.push_back(nextMove);
+		}
+	}
+	return moves;
 }
 
 vector<string> checkLines(string piece, map<string, string> boardPosition)
@@ -89,6 +91,45 @@ void startingPieces(map<string, string>& boardPosition, vector<string>& boardOrd
 
 }
 
+vector<string> moveWhitePawn(string piecePos, map<string, string> boardPosition)
+{
+	vector<string> moves = {};
+	char file = piecePos[1];
+	char rank = piecePos[2];
+
+	string nextMove = checkCollision(true, string{ file, char(rank+1) }, boardPosition);
+
+	if (nextMove != "" && nextMove.size() < 3) { // nextMove would be e.g. A2x if there's something
+												 // to capture but pawns cannot capture forward
+		moves.push_back(nextMove);
+
+		// If a collision happened 1 square ahead, no need to check 2 squares
+		if (rank == '2') {
+			nextMove = checkCollision(true, string{ file, char(rank + 2) }, boardPosition);
+			if (nextMove != "" && nextMove.size() < 3) { 
+				moves.push_back(nextMove);
+			}
+		}
+	}
+	if (file > 'A') {
+		nextMove = checkCollision(true, string{ char(file-1), char(rank+1)}, boardPosition);
+		if (nextMove != "" && nextMove.size() == 3) { // Pawns must be able to capture to move diagonally
+			moves.push_back(nextMove);
+		}
+	}
+	if (file < 'H') {
+		nextMove = checkCollision(true, string{ char(file + 1), char(rank+1) }, boardPosition);
+		if (nextMove != "" && nextMove.size() == 3) {
+			moves.push_back(nextMove);
+		}
+	}
+
+	// TODO: En passant. If rank == 6, check previous move
+
+	return moves;
+
+}
+
 string findPiecePosition(string piece, map<string, string> boardPosition)
 {
 	for (auto it = boardPosition.begin(); it != boardPosition.end(); it++) {
@@ -106,7 +147,7 @@ string checkCollision(bool whiteTurn, string position, map<string, string> board
 
 	char turn = whiteTurn ? 'W' : 'B';
 
-	if (boardPosition[position] == "") {
+	if (boardPosition[position] == ".") {
 		return position;
 	}
 	else if (boardPosition[position][0] == turn) {
