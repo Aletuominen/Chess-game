@@ -17,26 +17,47 @@ void movePiece(bool whiteTurn, map<string, string> boardPosition, vector<string>
 		if (!parseInput(whiteTurn, input, boardPosition, boardOrder)) {
 			continue;
 		}
-
+		
 		string piecePosition = findPiecePosition(input, boardPosition);
 		if (piecePosition == "") {
 			cout << "Invalid piece" << endl;
 			continue;
 		}
 		else {
+
+			// Separate function for validPiece
+
 			cout << "Moving piece " << boardPosition[piecePosition] << " on square " << piecePosition << endl;
 			vector<string> legalMoves = findLegalMoves(true, input, boardPosition);
+
+			if (size(legalMoves) == 0) {
+				cout << "Piece has no legal moves. Please select another piece." << endl;
+				continue;
+			}
+
 			cout << "Legal moves are: ";
 			for (string nextMove : legalMoves) {
 				 cout << nextMove << ", ";
 			}
 			cout << endl;
 
+			// A3x notation will have to do for now, implement proper algebraic notation later
+			cout << "Please select one of the moves: ";
+			string selectedMove = {};
+			cin >> selectedMove;
+			if (find(legalMoves.begin(), legalMoves.end(), selectedMove) != legalMoves.end()) {
+				// updateBoard()
+				boardPosition[piecePosition] = ".";
+				boardPosition[selectedMove.substr(0, 2)] = input;
+				cout << endl <<  " Move successful " << endl;
+				printBoard(boardPosition, boardOrder);
 				
-
 			}
-		
+			else {
+				cout << "Invalid move. Select a piece again." << endl;
+			}
 
+		}
 
 	}
 
@@ -64,6 +85,8 @@ void playGame(map<string, string> boardPosition, vector<string> boardOrder){
 
 int parseInput(bool whiteTurn, string input, 
 			   const map<string, string>& boardPosition , const vector<string>& boardOrder){
+
+	// Add more options for starting game, selecting side etc.
 
 	if (input == "print") {
 		printBoard(boardPosition, boardOrder);

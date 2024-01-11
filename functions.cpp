@@ -124,6 +124,7 @@ vector<string> moveWhitePawn(string piecePos, map<string, string> boardPosition)
 		}
 	}
 
+	// TODO: Promotion. If rank == 7, give promotion options
 	// TODO: En passant. If rank == 6, check previous move
 
 	return moves;
