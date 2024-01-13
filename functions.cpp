@@ -26,7 +26,7 @@ void printBoard(const map<string, string> &boardPosition, const vector<string> &
 	}
 }
 // Separate function for each piece type?
-vector<string> findLegalMoves(bool whiteTurn, string piece, map<string, string> boardPosition)
+vector<string> findLegalMoves(const bool whiteTurn, string piece, map<string, string> boardPosition)
 {
 
 	stringstream ss;
@@ -35,6 +35,9 @@ vector<string> findLegalMoves(bool whiteTurn, string piece, map<string, string> 
 
 	if (piece[1] == 'P' && whiteTurn) {
 		moves = moveWhitePawn(ss.str(), boardPosition);
+	}
+	else if (piece[1] == 'P' && !whiteTurn) {
+		moves = moveBlackPawn(ss.str(), boardPosition);
 	}
 	
 	/* Executed in other functions
@@ -46,7 +49,7 @@ vector<string> findLegalMoves(bool whiteTurn, string piece, map<string, string> 
 	return moves;
 }
 
-vector<string> checkDiagonals(bool whiteTurn, string piece, map<string, string> boardPosition)
+vector<string> checkDiagonals(const bool whiteTurn, string piece, map<string, string> boardPosition)
 {
 	char file = piece[1];
 	char rank = piece[2];
@@ -72,7 +75,7 @@ vector<string> checkLines(string piece, map<string, string> boardPosition)
 	return vector<string>();
 }
 
-bool checkmate(map<string, string> boardPosition, bool whiteTurn)
+bool checkmate(map<string, string> boardPosition, const bool whiteTurn)
 {
 	return false;
 }
@@ -131,6 +134,46 @@ vector<string> moveWhitePawn(string piecePos, map<string, string> boardPosition)
 
 }
 
+vector<string> moveBlackPawn(string piecePos, map<string, string> boardPosition)
+{
+
+	vector<string> moves = {};
+	char file = piecePos[1];
+	char rank = piecePos[2];
+
+	string nextMove = checkCollision(false, string{ file, char(rank - 1) }, boardPosition);
+
+	// if rank == 2 : check promotion
+	if (nextMove != "" && nextMove.size() < 3) { // nextMove would be e.g. A2x if there's something
+												 // to capture but pawns cannot capture forward
+		moves.push_back(nextMove);
+
+		// If a collision happened 1 square ahead, no need to check 2 squares, hence nested if clauses
+		if (rank == '7') {
+			nextMove = checkCollision(false, string{ file, char(rank - 2) }, boardPosition);
+
+			if (nextMove != "" && nextMove.size() < 3) {
+				moves.push_back(nextMove);
+			}
+		}
+	}
+	if (file > 'A') {
+		nextMove = checkCollision(false, string{ char(file - 1), char(rank - 1) }, boardPosition);
+
+		if (nextMove != "" && nextMove.size() == 3) { // Pawns can only move diagonally if there's a capture
+			moves.push_back(nextMove);
+		}
+	}
+	if (file < 'H') {
+		nextMove = checkCollision(false, string{ char(file + 1), char(rank -1) }, boardPosition);
+
+		if (nextMove != "" && nextMove.size() == 3) {
+			moves.push_back(nextMove);
+		}
+	}
+	return moves;
+}
+
 string findPiecePosition(string piece, map<string, string> boardPosition)
 {
 	for (auto it = boardPosition.begin(); it != boardPosition.end(); it++) {
@@ -144,7 +187,7 @@ string findPiecePosition(string piece, map<string, string> boardPosition)
 // Free square: return original square
 // Occupied by friendly piece: return empty string
 // Occupied by opponent piece: return original square and x
-string checkCollision(bool whiteTurn, string position, map<string, string> boardPosition){
+string checkCollision(const bool whiteTurn, string position, map<string, string> boardPosition){
 
 	char turn = whiteTurn ? 'W' : 'B';
 
