@@ -39,13 +39,7 @@ vector<string> findLegalMoves(const bool whiteTurn, string piece, map<string, st
 	else if (piece[1] == 'P' && !whiteTurn) {
 		moves = moveBlackPawn(ss.str(), boardPosition);
 	}
-	
-	/* Executed in other functions
-	for (int i = 0; i < moves.size(); ++i) {
 
-		moves[i] = checkCollision(whiteTurn, moves[i], boardPosition);
-	}
-	*/
 	return moves;
 }
 
