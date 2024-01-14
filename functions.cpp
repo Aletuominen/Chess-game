@@ -120,7 +120,12 @@ vector<string> moveWhitePawn(string piecePos, map<string, string> boardPosition)
 			moves.push_back(nextMove);
 		}
 	}
-
+	const int sizeOfMoves = moves.size();	// We will be appending "moves" and don't
+	for (int i = 0; i < sizeOfMoves; ++i) { // want the original size condition to change
+		if (moves[i][1] == '8') {
+			pawnPromotion(moves, i);
+		}
+	}
 	// TODO: Promotion. If rank == 7, give promotion options
 	// TODO: En passant. If rank == 6, check previous move
 
@@ -196,4 +201,19 @@ string checkCollision(const bool whiteTurn, string position, map<string, string>
 	}
 	
 
+}
+
+// Indexing vector with const int and only using push_back should never invalidate the order
+void pawnPromotion(vector<string>& moves, const int& i)
+{
+	const char pieces[5] = "QRNB"; // legal promotions
+	stringstream ss;
+
+	for (int piece = 0; piece < strlen(pieces); ++piece) {
+		ss << moves.at(i) << '=' << pieces[piece];
+		moves.push_back(ss.str());
+		cout << ss.str() << endl;
+		stringstream().swap(ss);
+	}
+	return;
 }

@@ -22,3 +22,4 @@ vector<string> moveWhitePawn(string piecePos, map<string, string> boardPosition)
 vector<string> moveBlackPawn(string piecePos, map<string, string> boardPosition);
 string findPiecePosition(string piece, map<string, string> boardPosition);
 string checkCollision(const bool whiteTurn, string position, map<string, string> boardPosition);
+void pawnPromotion(vector<string>& moves, const int &i);

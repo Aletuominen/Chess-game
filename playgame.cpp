@@ -10,6 +10,7 @@ void playGame(map<string, string> boardPosition, const vector<string> &boardOrde
 	boardPosition["B3"] = "BP9";
 	boardPosition["E3"] = "WP9";
 	*/
+	boardPosition["B7"] = "WP9"; // Promotion check
 
 	bool whiteTurn = true;
 	printBoard(boardPosition, boardOrder);
@@ -21,7 +22,7 @@ void playGame(map<string, string> boardPosition, const vector<string> &boardOrde
 			break;
 		}
 		if (movePiece(whiteTurn, scoreSheet, boardPosition, boardOrder) == 1) { // 1 if move completed successfully, otherwise
-			whiteTurn = !whiteTurn;											   // call function again without switching turn
+			//whiteTurn = !whiteTurn;											   // call function again without switching turn
 			printBoard(boardPosition, boardOrder);
 		}
 	}
@@ -99,11 +100,18 @@ string parseInput(const bool whiteTurn, const vector<string> &scoreSheet,
 	}
 }
 
+// selectedMove is guaranteed to be 2-5 characters as per checks by other functions
 void updateBoard(map<string, string>& boardPosition, const string& piecePosition, string input,
 				 const string& selectedMove, vector<string> &scoreSheet)
 {
 	boardPosition[piecePosition] = ".";
-	boardPosition[selectedMove.substr(0, 2)] = input;
+	if (selectedMove.at(selectedMove.size() - 2) == '=') { // Pawn promotion
+		// Add 3 at the end to avoid conflicts. Need to increment in case of multiple promotions of same type.
+		boardPosition[selectedMove.substr(0, 2)] = string{ input[0], selectedMove.at(selectedMove.size()-1), '3'};
+	}
+	else {
+		boardPosition[selectedMove.substr(0, 2)] = input;
+	}
 	scoreSheet.push_back(input.append(selectedMove));
 	return;
 }
