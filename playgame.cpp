@@ -6,10 +6,11 @@ void playGame(map<string, string> boardPosition, const vector<string> &boardOrde
 	string gameResult = "";
 	vector<string> scoreSheet = {};
 
-	/*Add friendly / opponent pieces on third row to test collision detection
+	/* Add friendly / opponent pieces on third row to test collision detection
 	boardPosition["B3"] = "BP9";
 	boardPosition["E3"] = "WP9";
 	*/
+
 	boardPosition["B7"] = "WP9"; // Promotion check
 
 	bool whiteTurn = true;

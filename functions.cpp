@@ -39,34 +39,34 @@ vector<string> findLegalMoves(const bool whiteTurn, string piece, map<string, st
 	else if (piece[1] == 'P' && !whiteTurn) {
 		moves = moveBlackPawn(ss.str(), boardPosition);
 	}
+	else if (piece[1] == 'B') {
+		moves = checkDiagonals(whiteTurn, ss.str(), boardPosition);
+	}
 
 	return moves;
 }
 
-vector<string> checkDiagonals(const bool whiteTurn, string piece, map<string, string> boardPosition)
+vector<string> checkDiagonals(const bool whiteTurn, string piece, const map<string, string> &boardPosition)
 {
-	char file = piece[1];
-	char rank = piece[2];
-	
+
 	vector<string> moves = {};
-	string nextMove = "";
-	// cout << string{file} << " and " << rank << endl;
 
-	while (file <= 'H' && rank <= 8) {
-
-		++file;
-		++rank;
-		nextMove = checkCollision(whiteTurn, string{ file, rank }, boardPosition);
-		if (nextMove != "") {
-			moves.push_back(nextMove);
-		}
-	}
+	diagonalLoop(whiteTurn, piece, 'A', '1', moves, boardPosition);
+	diagonalLoop(whiteTurn, piece, 'A', '8', moves, boardPosition);
+	diagonalLoop(whiteTurn, piece, 'H', '1', moves, boardPosition);
+	diagonalLoop(whiteTurn, piece, 'H', '8', moves, boardPosition);
+	
 	return moves;
 }
 
 vector<string> checkLines(string piece, map<string, string> boardPosition)
 {
 	return vector<string>();
+}
+
+bool check(map<string, string> boardPosition, const bool whiteTurn)
+{
+	return false;
 }
 
 bool checkmate(map<string, string> boardPosition, const bool whiteTurn)
@@ -120,7 +120,7 @@ vector<string> moveWhitePawn(string piecePos, map<string, string> boardPosition)
 			moves.push_back(nextMove);
 		}
 	}
-	const int sizeOfMoves = moves.size();	// We will be appending "moves" and don't
+	const size_t sizeOfMoves = moves.size();	// We will be appending "moves" and don't
 	for (int i = 0; i < sizeOfMoves; ++i) { // want the original size condition to change
 		if (moves[i][1] == '8') {
 			pawnPromotion(moves, i);
@@ -186,20 +186,55 @@ string findPiecePosition(string piece, map<string, string> boardPosition)
 // Free square: return original square
 // Occupied by friendly piece: return empty string
 // Occupied by opponent piece: return original square and x
-string checkCollision(const bool whiteTurn, string position, map<string, string> boardPosition){
+string checkCollision(const bool &whiteTurn, const string &position, const map<string, string> &boardPosition){
 
 	char turn = whiteTurn ? 'W' : 'B';
-
-	if (boardPosition[position] == ".") {
+	if (boardPosition.at(position) == ".") {
 		return position;
 	}
-	else if (boardPosition[position][0] == turn) {
+	else if (boardPosition.at(position)[0] == turn) {
 		return "";
 	}
 	else {
 		return position + 'x';
 	}
 	
+
+}
+
+void diagonalLoop(const bool& whiteTurn, const string& position, const char& fileBound, const char& rankBound,
+				  vector<string> &moves, const map<string,string> &boardPosition)
+{
+	string nextMove = "";
+
+	char file = position[1];
+	char rank = position[2];
+
+	int fileDirection = 1;
+	int rankDirection = 1;
+
+	// Moving toward the boundary, negative increment needed if boundary is A or 1
+	if (fileBound == 'A') {
+		fileDirection = -1;
+	} 
+	if (rankBound == '1') {
+		rankDirection = -1;
+	}
+
+	while (file != fileBound && rank != rankBound) {
+
+		file = file + fileDirection;
+		rank = rank + rankDirection;
+		nextMove = checkCollision(whiteTurn, string{ file, rank}, boardPosition);
+		if (nextMove == "") { // Friendly piece, no need to check further
+			return;
+		}
+		else if (nextMove.size() > 2) { // Capture available, no need to check further
+			moves.push_back(nextMove);
+			return;
+		}
+		moves.push_back(nextMove);
+	}
 
 }
 
