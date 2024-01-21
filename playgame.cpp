@@ -33,7 +33,6 @@ int movePiece(const bool whiteTurn, vector<string> &scoreSheet,
 	map<string, string> &boardPosition, const vector<string> &boardOrder) {
 
 		string input = parseInput(whiteTurn, scoreSheet, boardPosition, boardOrder);
-
 		vector<string> legalMoves = findLegalMoves(whiteTurn, input, boardPosition);
 
 		while (size(legalMoves) == 0) {
@@ -75,6 +74,10 @@ string parseInput(const bool whiteTurn, const vector<string> &scoreSheet,
 			for (auto move : scoreSheet) {
 				cout << move << endl;
 			}
+		}
+		else if (input.find("attacked") == !string::npos) {
+			squreAttacked(whiteTurn, string{ input[input.size() - 2], input[input.size() - 1] }, boardPosition);
+			continue;
 		}
 
 		else if (input == "print") {

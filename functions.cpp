@@ -29,54 +29,91 @@ void printBoard(const map<string, string> &boardPosition, const vector<string> &
 vector<string> findLegalMoves(const bool whiteTurn, string piece, map<string, string> boardPosition)
 {
 
-	stringstream ss;
 	vector<string> moves = {};
-	ss << piece[1] << findPiecePosition(piece, boardPosition); // e.g. PA2
 
 	if (piece[1] == 'P' && whiteTurn) {
-		moves = moveWhitePawn(ss.str(), boardPosition);
+		moves = moveWhitePawn(findPiecePosition(piece, boardPosition), boardPosition);
 	}
 	else if (piece[1] == 'P' && !whiteTurn) {
-		moves = moveBlackPawn(ss.str(), boardPosition);
+		moves = moveBlackPawn(findPiecePosition(piece, boardPosition), boardPosition);
 	}
 	else if (piece[1] == 'B') {
-		moves = diagonalMoves(whiteTurn, ss.str(), boardPosition);
+		moves = diagonalMoves(whiteTurn, findPiecePosition(piece, boardPosition), boardPosition);
 	}
 	else if (piece[1] == 'R') {
-		moves = lineMoves(whiteTurn, ss.str(), boardPosition);
+		moves = lineMoves(whiteTurn, findPiecePosition(piece, boardPosition), boardPosition);
 	}
 	else if (piece[1] == 'Q') {
-		moves = lineMoves(whiteTurn, ss.str(), boardPosition);
-		vector<string> diagMoves = diagonalMoves(whiteTurn, ss.str(), boardPosition);
+		moves = lineMoves(whiteTurn, findPiecePosition(piece, boardPosition), boardPosition);
+		vector<string> diagMoves = diagonalMoves(whiteTurn, findPiecePosition(piece, boardPosition), boardPosition);
 		moves.insert(moves.end(), diagMoves.begin(), diagMoves.end());
+	}
+	else if (piece[1] == 'N') {
+		moves = knightMoves(whiteTurn, findPiecePosition(piece, boardPosition), boardPosition);
 	}
 
 	return moves;
 }
 
-vector<string> lineMoves(const bool whiteTurn, string piecePos, const map<string, string>& boardPosition)
+vector<string> lineMoves(const bool whiteTurn, string position, const map<string, string>& boardPosition)
 {
 	vector<string> moves = {};
 
-	moveLoop(whiteTurn, piecePos, 1, 0, moves, boardPosition);
-	moveLoop(whiteTurn, piecePos, 0, 1, moves, boardPosition);
-	moveLoop(whiteTurn, piecePos, -1, 0, moves, boardPosition);
-	moveLoop(whiteTurn, piecePos, 0, -1, moves, boardPosition);
+	moveLoop(whiteTurn, position, 1, 0, moves, boardPosition);
+	moveLoop(whiteTurn, position, 0, 1, moves, boardPosition);
+	moveLoop(whiteTurn, position, -1, 0, moves, boardPosition);
+	moveLoop(whiteTurn, position, 0, -1, moves, boardPosition);
 
 	return moves;
 
 }
 
-vector<string> diagonalMoves(const bool whiteTurn, string piecePos, const map<string, string> &boardPosition)
+vector<string> diagonalMoves(const bool whiteTurn, string position, const map<string, string> &boardPosition)
 {
 	vector<string> moves = {};
 
-	moveLoop(whiteTurn, piecePos, -1, -1, moves, boardPosition);
-	moveLoop(whiteTurn, piecePos, 1, -1, moves, boardPosition);
-	moveLoop(whiteTurn, piecePos, -1, 1, moves, boardPosition);
-	moveLoop(whiteTurn, piecePos, 1, 1, moves, boardPosition);
+	moveLoop(whiteTurn, position, -1, -1, moves, boardPosition);
+	moveLoop(whiteTurn, position, 1, -1, moves, boardPosition);
+	moveLoop(whiteTurn, position, -1, 1, moves, boardPosition);
+	moveLoop(whiteTurn, position, 1, 1, moves, boardPosition);
 	
 	return moves;
+}
+
+vector<string> knightMoves(const bool whiteTurn, string position, const map<string, string>& boardPosition)
+{
+	vector<string> moves = {};
+	string move = "";
+	vector<int> knightDirections = { -1, 1, -2, 2 };
+
+	for (int i : knightDirections) {
+		for (int j : knightDirections) {
+			if (abs(i) == abs(j)) {
+				continue;
+			}
+			move = singleMove(whiteTurn, position, i, j, boardPosition);
+			if (move != "") {
+				moves.push_back(move);
+			}
+		}
+	}
+	return moves;
+}
+
+bool squreAttacked(const bool& whiteTurn, string square, const map<string, string>& boardPosition)
+{
+	// char turn = whiteTurn ? 'W' : 'B';
+	
+	// Create an imaginary Queen in the position to find out which opponent pieces have vision
+	// Add knight moves on top
+	vector<string> potentialAttackers = lineMoves(whiteTurn, square, boardPosition);
+	vector<string> diagMoves = diagonalMoves(whiteTurn, square, boardPosition);
+	vector<string> NMoves = knightMoves(whiteTurn, square, boardPosition);
+
+	potentialAttackers.insert(potentialAttackers.end(), diagMoves.begin(), diagMoves.end());
+
+	return true;
+
 }
 
 bool check(map<string, string> boardPosition, const bool whiteTurn)
@@ -103,11 +140,23 @@ void startingPieces(map<string, string>& boardPosition, vector<string>& boardOrd
 
 }
 
-vector<string> moveWhitePawn(string piecePos, map<string, string> boardPosition)
+string singleMove(const bool& whiteTurn, string position, const int& x, const int& y
+				, const map<string, string>& boardPosition)
+{
+	char new_x = position[0] + x;
+	char new_y = position[1] + y;
+
+	if ((new_x - 'A' | 'H' - new_x | new_y - '1' | '8' - new_y) >= 0) {
+		return checkCollision(whiteTurn, string{ new_x , new_y }, boardPosition);
+	}
+	return "";
+}
+
+vector<string> moveWhitePawn(string position, map<string, string> boardPosition)
 {
 	vector<string> moves = {};
-	char file = piecePos[1];
-	char rank = piecePos[2];
+	char file = position[0];
+	char rank = position[1];
 
 	string nextMove = checkCollision(true, string{ file, char(rank+1) }, boardPosition);
 
@@ -148,12 +197,12 @@ vector<string> moveWhitePawn(string piecePos, map<string, string> boardPosition)
 
 }
 
-vector<string> moveBlackPawn(string piecePos, map<string, string> boardPosition)
+vector<string> moveBlackPawn(string position, map<string, string> boardPosition)
 {
 
 	vector<string> moves = {};
-	char file = piecePos[1];
-	char rank = piecePos[2];
+	char file = position[0];
+	char rank = position[1];
 
 	string nextMove = checkCollision(false, string{ file, char(rank - 1) }, boardPosition);
 
@@ -222,8 +271,8 @@ void moveLoop(const bool& whiteTurn, const string& position, const int& fileOffs
 {
 	string nextMove = "";
 
-	char file = position[1];
-	char rank = position[2];
+	char file = position[0];
+	char rank = position[1];
 
 	char fileBound = 'H' + 1; // I 9 boundaries used for positive incrementation, adjust
 	char rankBound = '8' + 1; // according to Offset parameter. If offset parameter is 0, 
