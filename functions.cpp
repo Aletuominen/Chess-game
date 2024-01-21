@@ -1,11 +1,11 @@
 #include "functions.h"
 
 // W = White, B = Black. Pieces numbered from left to right, bottom up.
-const vector<string> whitePieces = { "WR1", "WN1", "WB1", "WQ", "WK" , "WB2" , "WN2" , "WR2"
+const vector<string> whitePieces = { "WR1", "WN1", "WB1", "WQ1", "WK" , "WB2" , "WN2" , "WR2"
 								, "WP1", "WP2", "WP3", "WP4", "WP5", "WP6", "WP7", "WP8"
 };
 const vector<string> blackPieces = { "BP1", "BP2", "BP3", "BP4", "BP5", "BP6", "BP7", "BP8"
-									, "BR1", "BN1", "BB1", "BQ", "BK" , "BB2" , "BN2" , "BR2"
+									, "BR1", "BN1", "BB1", "BQ1", "BK" , "BB2" , "BN2" , "BR2"
 };
 
 void printBoard(const map<string, string> &boardPosition, const vector<string> &boardOrder) {
@@ -25,7 +25,7 @@ void printBoard(const map<string, string> &boardPosition, const vector<string> &
 		}
 	}
 }
-// Separate function for each piece type?
+
 vector<string> findLegalMoves(const bool whiteTurn, string piece, map<string, string> boardPosition)
 {
 
@@ -40,28 +40,43 @@ vector<string> findLegalMoves(const bool whiteTurn, string piece, map<string, st
 		moves = moveBlackPawn(ss.str(), boardPosition);
 	}
 	else if (piece[1] == 'B') {
-		moves = checkDiagonals(whiteTurn, ss.str(), boardPosition);
+		moves = diagonalMoves(whiteTurn, ss.str(), boardPosition);
+	}
+	else if (piece[1] == 'R') {
+		moves = lineMoves(whiteTurn, ss.str(), boardPosition);
+	}
+	else if (piece[1] == 'Q') {
+		moves = lineMoves(whiteTurn, ss.str(), boardPosition);
+		vector<string> diagMoves = diagonalMoves(whiteTurn, ss.str(), boardPosition);
+		moves.insert(moves.end(), diagMoves.begin(), diagMoves.end());
 	}
 
 	return moves;
 }
 
-vector<string> checkDiagonals(const bool whiteTurn, string piece, const map<string, string> &boardPosition)
+vector<string> lineMoves(const bool whiteTurn, string piecePos, const map<string, string>& boardPosition)
 {
-
 	vector<string> moves = {};
 
-	diagonalLoop(whiteTurn, piece, 'A', '1', moves, boardPosition);
-	diagonalLoop(whiteTurn, piece, 'A', '8', moves, boardPosition);
-	diagonalLoop(whiteTurn, piece, 'H', '1', moves, boardPosition);
-	diagonalLoop(whiteTurn, piece, 'H', '8', moves, boardPosition);
-	
+	moveLoop(whiteTurn, piecePos, 1, 0, moves, boardPosition);
+	moveLoop(whiteTurn, piecePos, 0, 1, moves, boardPosition);
+	moveLoop(whiteTurn, piecePos, -1, 0, moves, boardPosition);
+	moveLoop(whiteTurn, piecePos, 0, -1, moves, boardPosition);
+
 	return moves;
+
 }
 
-vector<string> checkLines(string piece, map<string, string> boardPosition)
+vector<string> diagonalMoves(const bool whiteTurn, string piecePos, const map<string, string> &boardPosition)
 {
-	return vector<string>();
+	vector<string> moves = {};
+
+	moveLoop(whiteTurn, piecePos, -1, -1, moves, boardPosition);
+	moveLoop(whiteTurn, piecePos, 1, -1, moves, boardPosition);
+	moveLoop(whiteTurn, piecePos, -1, 1, moves, boardPosition);
+	moveLoop(whiteTurn, piecePos, 1, 1, moves, boardPosition);
+	
+	return moves;
 }
 
 bool check(map<string, string> boardPosition, const bool whiteTurn)
@@ -202,7 +217,7 @@ string checkCollision(const bool &whiteTurn, const string &position, const map<s
 
 }
 
-void diagonalLoop(const bool& whiteTurn, const string& position, const char& fileBound, const char& rankBound,
+void moveLoop(const bool& whiteTurn, const string& position, const int& fileOffset, const int& rankOffset,
 				  vector<string> &moves, const map<string,string> &boardPosition)
 {
 	string nextMove = "";
@@ -210,21 +225,22 @@ void diagonalLoop(const bool& whiteTurn, const string& position, const char& fil
 	char file = position[1];
 	char rank = position[2];
 
-	int fileDirection = 1;
-	int rankDirection = 1;
-
-	// Moving toward the boundary, negative increment needed if boundary is A or 1
-	if (fileBound == 'A') {
-		fileDirection = -1;
+	char fileBound = 'H' + 1; // I 9 boundaries used for positive incrementation, adjust
+	char rankBound = '8' + 1; // according to Offset parameter. If offset parameter is 0, 
+							  // boundaries in that direction don't matter
+	if (fileOffset == -1) {
+		fileBound = 'A' - 1;
 	} 
-	if (rankBound == '1') {
-		rankDirection = -1;
+	if (rankOffset == -1) {
+		rankBound = '1' - 1;
 	}
 
+	// Pre-increment values and check if destination square is outside of the board. This ensures that
+	// vertical moves along the H file, for example, are allowed but not diagonal moves to the right
+	file += fileOffset;
+	rank += rankOffset;
 	while (file != fileBound && rank != rankBound) {
 
-		file = file + fileDirection;
-		rank = rank + rankDirection;
 		nextMove = checkCollision(whiteTurn, string{ file, rank}, boardPosition);
 		if (nextMove == "") { // Friendly piece, no need to check further
 			return;
@@ -234,6 +250,8 @@ void diagonalLoop(const bool& whiteTurn, const string& position, const char& fil
 			return;
 		}
 		moves.push_back(nextMove);
+		file += fileOffset;
+		rank += rankOffset;
 	}
 
 }

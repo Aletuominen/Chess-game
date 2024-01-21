@@ -11,7 +11,7 @@ void playGame(map<string, string> boardPosition, const vector<string> &boardOrde
 	boardPosition["E3"] = "WP9";
 	*/
 
-	boardPosition["B7"] = "WP9"; // Promotion check
+	// boardPosition["B7"] = "WP9"; // Promotion check
 
 	bool whiteTurn = true;
 	printBoard(boardPosition, boardOrder);
